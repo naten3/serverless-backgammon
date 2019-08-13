@@ -9,7 +9,8 @@ import (
 	"github.com/dgrijalva/jwt-go"
 
 	// todo better way to import this
-	"github.com/naten3/serverless-demo/wsclient"
+	"github.com/naten3/serverless-backgammon/dbclient"
+	"github.com/naten3/serverless-backgammon/wsclient"
 )
 
 type Response events.APIGatewayProxyResponse
@@ -32,7 +33,7 @@ func Handler(context context.Context, request events.APIGatewayWebsocketProxyReq
 		claims := parsedToken.Claims.(jwt.MapClaims)
 		id := claims["id"].(string)
 
-		dbclient.saveVerifiedWsUser(connectionId, id)
+		dbclient.SaveVerifiedWsUser(connectionId, id)
 
 		return Response{
 			StatusCode: 200,

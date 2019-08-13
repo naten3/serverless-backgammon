@@ -10,7 +10,8 @@ import (
 
 var db = dynamodb.New(session.New(), aws.NewConfig().WithRegion(os.Getenv("REGION")))
 
-func saveVerifiedWsUser(wsId string, userId string) error {
+// SaveVerifiedWsUser add a user and session id combination
+func SaveVerifiedWsUser(wsId string, userId string) error {
 	input := &dynamodb.PutItemInput{
 		TableName: aws.String("WsUserTable"),
 		Item: map[string]*dynamodb.AttributeValue{
