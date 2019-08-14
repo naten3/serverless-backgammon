@@ -10,27 +10,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/apigatewaymanagementapi"
 )
 
-type ApiGatewayManagementApi = apigatewaymanagementapi.ApiGatewayManagementApi
-type WsClient struct {
-	api *ApiGatewayManagementApi
-}
-
 var endpoint = "https://" + os.Getenv("WSAPI") + ".execute-api." + os.Getenv("REGION") + ".amazonaws.com/" + os.Getenv("STAGE")
+var sess = session.Must(session.NewSession())
 var client = apigatewaymanagementapi.New(sess, aws.NewConfig().WithEndpoint(endpoint))
 
-func New() *WsClient {
-	sess := session.Must(session.NewSession())
-	// todo get region and stage from environment
-	endpoint := "https://" + os.Getenv("WSAPI") + ".execute-api." + os.Getenv("REGION") + ".amazonaws.com/" + os.Getenv("STAGE")
-	fmt.Println("endpoint: " + endpoint)
-	client := apigatewaymanagementapi.New(sess, aws.NewConfig().WithEndpoint(endpoint))
-
-	return &WsClient{
-		api: client,
-	}
-}
-
-func (client WsClient) Post(connectionId string, action string, object interface{}) {
+// Post post a payload to a specific connection id
+func Post(connectionID string, action string, object interface{}) error {
 	body := map[string]interface{}{
 		"action": action,
 		"data":   object,
@@ -40,12 +25,13 @@ func (client WsClient) Post(connectionId string, action string, object interface
 
 	if err != nil {
 		fmt.Println(err.Error())
-		return
+		return err
 	}
 
-	output, err := client.api.PostToConnection(
+	fmt.Printf("posting to connection id " + connectionID)
+	output, err := client.PostToConnection(
 		&apigatewaymanagementapi.PostToConnectionInput{
-			ConnectionId: &connectionId,
+			ConnectionId: &connectionID,
 			Data:         []byte(json),
 		},
 	)
@@ -54,4 +40,5 @@ func (client WsClient) Post(connectionId string, action string, object interface
 		fmt.Println(output)
 		fmt.Println(err.Error())
 	}
+	return err
 }

@@ -21,7 +21,6 @@ type wsPayload struct {
 }
 
 func Handler(context context.Context, request events.APIGatewayWebsocketProxyRequest) (Response, error) {
-	websocketClient := wsclient.New()
 	connectionID := request.RequestContext.ConnectionID
 
 	var payload wsPayload
@@ -54,7 +53,7 @@ func Handler(context context.Context, request events.APIGatewayWebsocketProxyReq
 			}, nil
 		}
 
-		websocketClient.Post(connectionID, "authenticated", nil)
+		wsclient.Post(connectionID, "authenticated", nil)
 		return Response{
 			StatusCode: 200,
 			Body:       "success",

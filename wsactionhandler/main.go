@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"serverless-backgammon/dbclient"
 	"serverless-backgammon/game"
+	"serverless-backgammon/wsclient"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -72,7 +73,8 @@ func watchGame(connectionID string, gameID string) error {
 		return err
 	}
 
-	websocketClient.Post()
+	err = wsclient.Post(connectionID, "watchedGame", fetchedGame)
+	return err
 }
 
 // create game if not present, add player, notify all watchers of game
