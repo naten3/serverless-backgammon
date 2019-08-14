@@ -29,6 +29,9 @@ func Handler(context context.Context, request events.APIGatewayWebsocketProxyReq
 		if payload.Action == "watchGame" {
 			err = dbclient.WatchGame(connectionID, payload.Data)
 		}
+		if payload.Action == "joinGame" {
+			joinGame(payload.Data)
+		}
 
 		if err == nil {
 			return Response{
@@ -47,6 +50,11 @@ func Handler(context context.Context, request events.APIGatewayWebsocketProxyReq
 		StatusCode: 400,
 		Body:       "invalid",
 	}, nil
+}
+
+// create game if not present, add player, notify all watchers of game
+func joinGame(gameID string) {
+
 }
 
 func main() {

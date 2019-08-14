@@ -7,6 +7,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+
+	"serverless-backgammon/game"
 )
 
 var db = dynamodb.New(session.New(), aws.NewConfig().WithRegion(os.Getenv("REGION")))
@@ -44,6 +46,45 @@ func DeleteWsUser(wsID string) error {
 	return err
 }
 
+// GetAuthenticatedUserID get an authenticated user id associated with a websocket
+func GetAuthenticatedUserID(wsID string) (string, error) {
+	fmt.Printf("getting user for wsID %v", wsID)
+	result, err := db.GetItem(&dynamodb.GetItemInput{
+		TableName: aws.String("WsUserTable"),
+		Key: map[string]*dynamodb.AttributeValue{
+			"ConnectionId": {
+				N: aws.String(wsID),
+			},
+		},
+	})
+	if err != nil {
+		fmt.Println(err.Error())
+		return "", err
+	}
+	if result == nil {
+		return "", nil
+	}
+	return result.Item["UserId"].String(), nil
+}
+
+// SetName set user's name
+func SetName(userID string, name string) error {
+	fmt.Printf("Saving user info for user id %v", userID)
+	input := &dynamodb.PutItemInput{
+		TableName: aws.String("UserInfo"),
+		Item: map[string]*dynamodb.AttributeValue{
+			"UserId": {
+				S: aws.String(userID),
+			},
+			"Name": {
+				S: aws.String(name),
+			},
+		},
+	}
+	_, err := db.PutItem(input)
+	return err
+}
+
 // WatchGame add watched game attribute to websocket table
 func WatchGame(wsID string, gameID string) error {
 	fmt.Printf("Watching game %v for websocket %v", gameID, wsID)
@@ -65,50 +106,41 @@ func WatchGame(wsID string, gameID string) error {
 	return err
 }
 
-/*func getItem(isbn string) (*book, error) {
-	input := &dynamodb.GetItemInput{
-		TableName: aws.String("Books"),
-		Key: map[string]*dynamodb.AttributeValue{
-			"ISBN": {
-				S: aws.String(isbn),
-			},
-		},
-	}
-
-	result, err := db.GetItem(input)
-	if err != nil {
-		return nil, err
-	}
-	if result.Item == nil {
-		return nil, nil
-	}
-
-	bk := new(book)
-	err = dynamodbattribute.UnmarshalMap(result.Item, bk)
-	if err != nil {
-		return nil, err
-	}
-
-	return bk, nil
-
-
-// Add a book record to DynamoDB.
-func putItem(bk *book) error {
+// SaveGame save a game state
+func SaveGame(game game.Game) error {
+	fmt.Printf("Saving game %v for websocket", game.ID)
 	input := &dynamodb.PutItemInput{
-		TableName: aws.String("Books"),
+		TableName: aws.String("UserInfo"),
 		Item: map[string]*dynamodb.AttributeValue{
-			"ISBN": {
-				S: aws.String(bk.ISBN),
+			"UserId": {
+				S: aws.String(userID),
 			},
-			"Title": {
-				S: aws.String(bk.Title),
-			},
-			"Author": {
-				S: aws.String(bk.Author),
+			"Name": {
+				S: aws.String(name),
 			},
 		},
 	}
-
 	_, err := db.PutItem(input)
 	return err
-}*/
+}
+
+// GetGame get a game by id
+func GetGame(gameID string) (game.Game, error) {
+	fmt.Printf("getting user for wsID %v", wsID)
+	result, err := db.GetItem(&dynamodb.GetItemInput{
+		TableName: aws.String("Game"),
+		Key: map[string]*dynamodb.AttributeValue{
+			"GameId": {
+				N: aws.String(gameID),
+			},
+		},
+	})
+	if err != nil {
+		fmt.Println(err.Error())
+		return "", err
+	}
+	if result == nil {
+		return "", nil
+	}
+	return result.Item["UserId"].String(), nil
+}
