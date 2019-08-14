@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -109,24 +111,23 @@ func WatchGame(wsID string, gameID string) error {
 // SaveGame save a game state
 func SaveGame(game game.Game) error {
 	fmt.Printf("Saving game %v for websocket", game.ID)
-	input := &dynamodb.PutItemInput{
-		TableName: aws.String("UserInfo"),
-		Item: map[string]*dynamodb.AttributeValue{
-			"UserId": {
-				S: aws.String(userID),
-			},
-			"Name": {
-				S: aws.String(name),
-			},
-		},
+	item, err := dynamodbattribute.MarshalMap(game)
+	if err != nil {
+		fmt.Println("Error saving game " + err.Error())
+		return err
 	}
-	_, err := db.PutItem(input)
-	return err
+
+	input := &dynamodb.PutItemInput{
+		TableName: aws.String("Game"),
+		Item:      item,
+	}
+	_, saveError := db.PutItem(input)
+	return saveError
 }
 
 // GetGame get a game by id
-func GetGame(gameID string) (game.Game, error) {
-	fmt.Printf("getting user for wsID %v", wsID)
+func GetGame(gameID string) (*game.Game, error) {
+	fmt.Printf("getting game for gameID %v", gameID)
 	result, err := db.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String("Game"),
 		Key: map[string]*dynamodb.AttributeValue{
@@ -136,11 +137,12 @@ func GetGame(gameID string) (game.Game, error) {
 		},
 	})
 	if err != nil {
-		fmt.Println(err.Error())
-		return "", err
+		fmt.Println("error getting game " + err.Error())
+		return nil, err
 	}
-	if result == nil {
-		return "", nil
+
+	if result.Item != nil {
+		return &game.Game{}, err
 	}
-	return result.Item["UserId"].String(), nil
+	return nil, nil
 }

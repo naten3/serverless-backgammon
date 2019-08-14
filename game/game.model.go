@@ -149,4 +149,6 @@ func newBoard() Board {
 			Count: 2,
 		},
 	}
+
+	return Board{Spaces: triangles}
 }
