@@ -4,10 +4,10 @@ Resources:
     Properties:
       TableName: WsUserTable
       AttributeDefinitions:
-        - AttributeName: ConnectionId
+        - AttributeName: connectionId
           AttributeType: S
       KeySchema:
-        - AttributeName: ConnectionId
+        - AttributeName: connectionId
           KeyType: HASH
       # Set the capacity to auto-scale
       BillingMode: PAY_PER_REQUEST
@@ -16,10 +16,10 @@ Resources:
     Properties:
       TableName: UserInfo
       AttributeDefinitions:
-        - AttributeName: UserId
+        - AttributeName: userId
           AttributeType: S
       KeySchema:
-        - AttributeName: UserId
+        - AttributeName: userId
           KeyType: HASH
       # Set the capacity to auto-scale
       BillingMode: PAY_PER_REQUEST
@@ -28,10 +28,10 @@ Resources:
     Properties:
       TableName: Game
       AttributeDefinitions:
-        - AttributeName: Id
+        - AttributeName: id
           AttributeType: S
       KeySchema:
-        - AttributeName: Id
+        - AttributeName: id
           KeyType: HASH
       # Set the capacity to auto-scale
       BillingMode: PAY_PER_REQUEST

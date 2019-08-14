@@ -15,6 +15,9 @@ type WsClient struct {
 	api *ApiGatewayManagementApi
 }
 
+var endpoint = "https://" + os.Getenv("WSAPI") + ".execute-api." + os.Getenv("REGION") + ".amazonaws.com/" + os.Getenv("STAGE")
+var client = apigatewaymanagementapi.New(sess, aws.NewConfig().WithEndpoint(endpoint))
+
 func New() *WsClient {
 	sess := session.Must(session.NewSession())
 	// todo get region and stage from environment
@@ -27,18 +30,28 @@ func New() *WsClient {
 	}
 }
 
-func (client WsClient) Post(connectionId string, object interface{}) {
-	json, error := json.Marshal(object)
+func (client WsClient) Post(connectionId string, action string, object interface{}) {
+	body := map[string]interface{}{
+		"action": action,
+		"data":   object,
+	}
 
-	output, error := client.api.PostToConnection(
+	json, err := json.Marshal(body)
+
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	output, err := client.api.PostToConnection(
 		&apigatewaymanagementapi.PostToConnectionInput{
 			ConnectionId: &connectionId,
 			Data:         []byte(json),
 		},
 	)
 
-	if error != nil {
+	if err != nil {
 		fmt.Println(output)
-		fmt.Println(error.Error())
+		fmt.Println(err.Error())
 	}
 }

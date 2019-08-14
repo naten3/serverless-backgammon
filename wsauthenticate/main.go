@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"serverless-backgammon/dbclient"
+	"serverless-backgammon/wsclient"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -20,7 +21,7 @@ type wsPayload struct {
 }
 
 func Handler(context context.Context, request events.APIGatewayWebsocketProxyRequest) (Response, error) {
-	// client := wsclient.New()
+	websocketClient := wsclient.New()
 	connectionID := request.RequestContext.ConnectionID
 
 	var payload wsPayload
@@ -53,6 +54,7 @@ func Handler(context context.Context, request events.APIGatewayWebsocketProxyReq
 			}, nil
 		}
 
+		websocketClient.Post(connectionID, "authenticated", nil)
 		return Response{
 			StatusCode: 200,
 			Body:       "success",

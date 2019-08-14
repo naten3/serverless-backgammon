@@ -22,7 +22,6 @@ type wsPayload struct {
 }
 
 func Handler(context context.Context, request events.APIGatewayWebsocketProxyRequest) (Response, error) {
-	// client := wsclient.New()
 	connectionID := request.RequestContext.ConnectionID
 
 	var payload wsPayload
@@ -37,6 +36,7 @@ func Handler(context context.Context, request events.APIGatewayWebsocketProxyReq
 				Body:       "error",
 			}, userFetchError
 		}
+		println("user id is " + userID)
 
 		var err error
 		if payload.Action == "watchGame" {
@@ -63,6 +63,16 @@ func Handler(context context.Context, request events.APIGatewayWebsocketProxyReq
 		StatusCode: 400,
 		Body:       "invalid",
 	}, nil
+}
+
+func watchGame(connectionID string, gameID string) error {
+	dbclient.WatchGame(connectionID, gameID)
+	fetchedGame, err := dbclient.GetGame(gameID)
+	if err != nil {
+		return err
+	}
+
+	websocketClient.Post()
 }
 
 // create game if not present, add player, notify all watchers of game
