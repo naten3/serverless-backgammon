@@ -3,8 +3,11 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"math/rand"
 	"serverless-backgammon/dbclient"
+	"serverless-backgammon/game"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -25,12 +28,22 @@ func Handler(context context.Context, request events.APIGatewayWebsocketProxyReq
 	var payload wsPayload
 	unmarshalErr := json.Unmarshal([]byte(request.Body), &payload)
 	if unmarshalErr == nil {
+
+		userID, userFetchError := dbclient.GetAuthenticatedUserID(connectionID)
+		if userFetchError != nil {
+			fmt.Println("Error " + userFetchError.Error())
+			return Response{
+				StatusCode: 400,
+				Body:       "error",
+			}, userFetchError
+		}
+
 		var err error
 		if payload.Action == "watchGame" {
 			err = dbclient.WatchGame(connectionID, payload.Data)
 		}
 		if payload.Action == "joinGame" {
-			joinGame(payload.Data)
+			err = joinGame(payload.Data, userID)
 		}
 
 		if err == nil {
@@ -43,7 +56,7 @@ func Handler(context context.Context, request events.APIGatewayWebsocketProxyReq
 		return Response{
 			StatusCode: 400,
 			Body:       "error",
-		}, nil
+		}, err
 	}
 	fmt.Println("Error unmarshalling payload " + unmarshalErr.Error())
 	return Response{
@@ -53,8 +66,43 @@ func Handler(context context.Context, request events.APIGatewayWebsocketProxyReq
 }
 
 // create game if not present, add player, notify all watchers of game
-func joinGame(gameID string) {
+func joinGame(gameID string, userID string) error {
+	fetchedGame, err := dbclient.GetGame(gameID)
+	if err != nil {
+		return err
+	}
+	if fetchedGame == nil {
+		newGame := game.NewGame(gameID)
+		fetchedGame = &newGame
+	}
+	if fetchedGame.White != nil && fetchedGame.Black != nil {
+		return errors.New("Game is full")
+	}
+	if fetchedGame.White != nil && (*fetchedGame.White == userID) || fetchedGame.Black != nil && (*fetchedGame.Black == userID) {
+		return errors.New(userID + " attempted to join game again")
+	}
+	var color game.Color
+	if fetchedGame.White == nil && fetchedGame.Black == nil {
+		if rand.Intn(2)%2 == 0 {
+			color = game.Black
+		} else {
+			color = game.White
+		}
+	}
+	if fetchedGame.White == nil {
+		color = game.White
+	} else {
+		color = game.Black
+	}
 
+	if color == game.White {
+		fetchedGame.White = &userID
+	} else {
+		fetchedGame.Black = &userID
+	}
+
+	dbclient.SaveGame(*fetchedGame)
+	return nil
 }
 
 func main() {
