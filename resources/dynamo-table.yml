@@ -4,10 +4,10 @@ Resources:
     Properties:
       TableName: WsUserTable
       AttributeDefinitions:
-        - AttributeName: connectionId
+        - AttributeName: ConnectionId
           AttributeType: S
       KeySchema:
-        - AttributeName: connectionId
+        - AttributeName: ConnectionId
           KeyType: HASH
       # Set the capacity to auto-scale
       BillingMode: PAY_PER_REQUEST

@@ -8,7 +8,6 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/dgrijalva/jwt-go"
 	// todo better way to import this
 )
 
@@ -25,40 +24,25 @@ func Handler(context context.Context, request events.APIGatewayWebsocketProxyReq
 
 	var payload wsPayload
 	unmarshalErr := json.Unmarshal([]byte(request.Body), &payload)
-	if unmarshalErr != nil {
-		fmt.Println(unmarshalErr.Error())
-	}
-	token := payload.Data
-	fmt.Println("token is " + token)
-
-	// TODO put in env variable
-	secret := "Dba98iE002lTOA8YdQtYvdf2U52Eai7WT1sIoVTO-Q0r5KDdHNbIfBZS8P8Y-yFf6NunyqqFcB3HuvOivsEs-Zi4oka_FK4TbW52G9dSsxGoppciGEtUsTFgpKQYpQ7qyZE7ncvf39bWR0Y1RkP-yf2X2Ffeq7bv75vXE2TWhvZU6oSjSTb1Wno04FlRCtJZ1vD1vJqfS1HI_tDKFwH8avwDM8Qu-voJzJIWEGMv2vF-9KBAsFuengcJNrMxKoOeNrQHq5ELxpgemodcCi5xNkKuoL_Rz8c8-LwsUclLqPk2zb-Yed7rlhMOeQLkgqEdLWIVrA0jhzATYmsTeZEl1A"
-	var jwtKeyfunc jwt.Keyfunc = func(t *jwt.Token) (interface{}, error) { return []byte(secret), nil }
-	fmt.Println("parsing token")
-	parsedToken, err := jwt.Parse(token, jwtKeyfunc)
-
-	if err == nil {
-		claims := parsedToken.Claims.(jwt.MapClaims)
-		fmt.Println("getting id off claim")
-		id := claims["id"].(string)
-
-		fmt.Println("saving verified user with id " + id)
-		saveError := dbclient.SaveVerifiedWsUser(connectionID, id)
-
-		if saveError != nil {
-			fmt.Println("save error " + saveError.Error())
-			return Response{
-				StatusCode: 400,
-				Body:       "save error ",
-			}, nil
+	if unmarshalErr == nil {
+		var err error
+		if payload.Action == "watchGame" {
+			err = dbclient.WatchGame(connectionID, payload.Data)
 		}
 
+		if err == nil {
+			return Response{
+				StatusCode: 200,
+				Body:       "success",
+			}, nil
+		}
+		fmt.Println("Error " + err.Error())
 		return Response{
-			StatusCode: 200,
-			Body:       "success",
+			StatusCode: 400,
+			Body:       "error",
 		}, nil
 	}
-	fmt.Println("Error parsing token " + err.Error())
+	fmt.Println("Error unmarshalling payload " + unmarshalErr.Error())
 	return Response{
 		StatusCode: 400,
 		Body:       "invalid",

@@ -31,7 +31,7 @@ func SaveVerifiedWsUser(wsID string, userID string) error {
 
 // DeleteWsUser delete a websocket connection id
 func DeleteWsUser(wsID string) error {
-	fmt.Printf("Deleting user %v", wsID)
+	fmt.Printf("Deleting ws connection %v", wsID)
 	input := &dynamodb.DeleteItemInput{
 		TableName: aws.String("WsUserTable"),
 		Key: map[string]*dynamodb.AttributeValue{
@@ -46,7 +46,7 @@ func DeleteWsUser(wsID string) error {
 
 // WatchGame add watched game attribute to websocket table
 func WatchGame(wsID string, gameID string) error {
-	fmt.Printf("Deleting user %v", wsID)
+	fmt.Printf("Watching game %v for websocket %v", gameID, wsID)
 	input := &dynamodb.UpdateItemInput{
 		TableName: aws.String("WsUserTable"),
 		Key: map[string]*dynamodb.AttributeValue{
@@ -54,14 +54,12 @@ func WatchGame(wsID string, gameID string) error {
 				S: aws.String(wsID),
 			},
 		},
-		ExpressionAttributeNames: map[string]*string{
-			"#AT": aws.String("WatchedGame"),
-		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":t": {
 				S: aws.String(gameID),
 			},
 		},
+		UpdateExpression: aws.String("set WatchedGame = :t"),
 	}
 	_, err := db.UpdateItem(input)
 	return err
