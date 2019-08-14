@@ -1,6 +1,7 @@
 package dbclient
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -11,15 +12,16 @@ import (
 var db = dynamodb.New(session.New(), aws.NewConfig().WithRegion(os.Getenv("REGION")))
 
 // SaveVerifiedWsUser add a user and session id combination
-func SaveVerifiedWsUser(wsId string, userId string) error {
+func SaveVerifiedWsUser(wsID string, userID string) error {
+	fmt.Printf("Saving websocket id %v and userId %v in region %v", wsID, userID, os.Getenv("REGION"))
 	input := &dynamodb.PutItemInput{
 		TableName: aws.String("WsUserTable"),
 		Item: map[string]*dynamodb.AttributeValue{
 			"connectionId": {
-				S: aws.String(wsId),
+				S: aws.String(wsID),
 			},
 			"userId": {
-				S: aws.String(userId),
+				S: aws.String(userID),
 			},
 		},
 	}

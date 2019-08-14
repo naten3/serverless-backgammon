@@ -2,14 +2,12 @@ Resources:
   WsUserTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: ${self:custom.tableName}
+      TableName: WsUserTable
       AttributeDefinitions:
         - AttributeName: connectionId
           AttributeType: S
-        - AttributeName: userId
-          AttributeType: S
       KeySchema:
         - AttributeName: connectionId
-          KeyType: HAS
+          KeyType: HASH
       # Set the capacity to auto-scale
       BillingMode: PAY_PER_REQUEST

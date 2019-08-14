@@ -30,6 +30,7 @@
     "aws/credentials/endpointcreds",
     "aws/credentials/processcreds",
     "aws/credentials/stscreds",
+    "aws/crr",
     "aws/csm",
     "aws/defaults",
     "aws/ec2metadata",
@@ -51,6 +52,7 @@
     "private/protocol/restjson",
     "private/protocol/xml/xmlutil",
     "service/apigatewaymanagementapi",
+    "service/dynamodb",
     "service/sts",
     "service/sts/stsiface",
   ]
@@ -75,11 +77,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:825a7c29fc5141dd03f4cfc267e4d445537b7f7b16770066dba11688137710a8"
-  name = "github.com/naten3/serverless-demo"
+  digest = "1:b1f70f18de8e3bdd236752860f548bbf48c40eb8048db1be066139aac0ea25e2"
+  name = "github.com/naten3/serverless-backgammon"
   packages = ["wsclient"]
   pruneopts = ""
-  revision = "1baa2f6023a5f44dd9c63f3755c5a868c1a96258"
+  revision = "b86456d798b448c74f6fb150ff5e6846c53a98a3"
 
 [[projects]]
   digest = "1:7f569d906bdd20d906b606415b7d794f798f91a62fcfb6a4daa6d50690fb7a3f"
@@ -98,8 +100,9 @@
     "github.com/aws/aws-sdk-go/aws",
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/apigatewaymanagementapi",
+    "github.com/aws/aws-sdk-go/service/dynamodb",
     "github.com/dgrijalva/jwt-go",
-    "github.com/naten3/serverless-demo/wsclient",
+    "github.com/naten3/serverless-backgammon/wsclient",
     "github.com/satori/go.uuid",
   ]
   solver-name = "gps-cdcl"
