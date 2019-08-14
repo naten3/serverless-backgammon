@@ -30,7 +30,7 @@ func Handler(context context.Context, request events.APIGatewayWebsocketProxyReq
 	if unmarshalErr == nil {
 
 		userID, userFetchError := dbclient.GetAuthenticatedUserID(connectionID)
-		if userFetchError != nil {
+		if userFetchError != nil || userID == "" {
 			fmt.Println("Error " + userFetchError.Error())
 			return Response{
 				StatusCode: 400,
@@ -101,8 +101,8 @@ func joinGame(gameID string, userID string) error {
 		fetchedGame.Black = &userID
 	}
 
-	dbclient.SaveGame(*fetchedGame)
-	return nil
+	saveErr := dbclient.SaveGame(*fetchedGame)
+	return saveErr
 }
 
 func main() {

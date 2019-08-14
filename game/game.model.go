@@ -1,7 +1,7 @@
 package game
 
 type Game struct {
-	ID               *string `json:"id"`
+	Id               *string `json:"id"`
 	Black            *string `json:"black"`
 	White            *string `json:"white"`
 	Board            Board   `json:"board"`
@@ -38,7 +38,7 @@ const (
 
 func NewGame(gameID string) Game {
 	return Game{
-		ID:               &gameID,
+		Id:               &gameID,
 		Black:            nil,
 		White:            nil,
 		Board:            newBoard(),

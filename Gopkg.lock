@@ -53,6 +53,7 @@
     "private/protocol/xml/xmlutil",
     "service/apigatewaymanagementapi",
     "service/dynamodb",
+    "service/dynamodb/dynamodbattribute",
     "service/sts",
     "service/sts/stsiface",
   ]
@@ -93,6 +94,7 @@
     "github.com/aws/aws-sdk-go/aws/session",
     "github.com/aws/aws-sdk-go/service/apigatewaymanagementapi",
     "github.com/aws/aws-sdk-go/service/dynamodb",
+    "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute",
     "github.com/dgrijalva/jwt-go",
     "github.com/satori/go.uuid",
   ]

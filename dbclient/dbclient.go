@@ -55,7 +55,7 @@ func GetAuthenticatedUserID(wsID string) (string, error) {
 		TableName: aws.String("WsUserTable"),
 		Key: map[string]*dynamodb.AttributeValue{
 			"ConnectionId": {
-				N: aws.String(wsID),
+				S: aws.String(wsID),
 			},
 		},
 	})
@@ -110,7 +110,7 @@ func WatchGame(wsID string, gameID string) error {
 
 // SaveGame save a game state
 func SaveGame(game game.Game) error {
-	fmt.Printf("Saving game %v for websocket", game.ID)
+	fmt.Printf("Saving game %v for websocket", game.Id)
 	item, err := dynamodbattribute.MarshalMap(game)
 	if err != nil {
 		fmt.Println("Error saving game " + err.Error())
@@ -132,7 +132,7 @@ func GetGame(gameID string) (*game.Game, error) {
 		TableName: aws.String("Game"),
 		Key: map[string]*dynamodb.AttributeValue{
 			"GameId": {
-				N: aws.String(gameID),
+				S: aws.String(gameID),
 			},
 		},
 	})
