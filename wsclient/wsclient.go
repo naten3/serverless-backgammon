@@ -18,7 +18,7 @@ type WsClient struct {
 func New() *WsClient {
 	sess := session.Must(session.NewSession())
 	// todo get region and stage from environment
-	endpoint := "https://" + os.Getenv("WSAPI") + ".execute-api.us-east-2.amazonaws.com/dev"
+	endpoint := "https://" + os.Getenv("WSAPI") + ".execute-api." + os.Getenv("REGION") + ".amazonaws.com/" + os.Getenv("STAGE")
 	fmt.Println("endpoint: " + endpoint)
 	client := apigatewaymanagementapi.New(sess, aws.NewConfig().WithEndpoint(endpoint))
 

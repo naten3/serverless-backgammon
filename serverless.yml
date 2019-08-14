@@ -24,17 +24,27 @@ provider:
   name: aws
   runtime: go1.x
 
-# you can overwrite defaults here
+
 #  stage: dev
   region: us-east-2
 
-# you can add statements to the Lambda function's IAM Role here
   iamRoleStatements:
     - Effect: "Allow"
       Action:
         - "execute-api:Invoke"
         #todo make this more specific
       Resource: "arn:aws:execute-api:*:*:*/*/*/*/*"
+    - Effect: "Allow"
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        #todo make this more specific
+      Resource: "arn:aws:dynamodb:${self:provider.region}:*:*/*"
 
 # you can define service wide environment variables here
   environment:
@@ -84,6 +94,11 @@ functions:
     events:
       - websocket:
           route: authenticate
+  websocket-handle-action:
+    handler: "bin/wsactionhandler"
+    events:
+      - websocket:
+          route: watchGame
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events

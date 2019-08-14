@@ -76,14 +76,6 @@
   revision = "c2b33e84"
 
 [[projects]]
-  branch = "master"
-  digest = "1:b1f70f18de8e3bdd236752860f548bbf48c40eb8048db1be066139aac0ea25e2"
-  name = "github.com/naten3/serverless-backgammon"
-  packages = ["wsclient"]
-  pruneopts = ""
-  revision = "b86456d798b448c74f6fb150ff5e6846c53a98a3"
-
-[[projects]]
   digest = "1:7f569d906bdd20d906b606415b7d794f798f91a62fcfb6a4daa6d50690fb7a3f"
   name = "github.com/satori/go.uuid"
   packages = ["."]
@@ -102,7 +94,6 @@
     "github.com/aws/aws-sdk-go/service/apigatewaymanagementapi",
     "github.com/aws/aws-sdk-go/service/dynamodb",
     "github.com/dgrijalva/jwt-go",
-    "github.com/naten3/serverless-backgammon/wsclient",
     "github.com/satori/go.uuid",
   ]
   solver-name = "gps-cdcl"

@@ -13,19 +13,57 @@ var db = dynamodb.New(session.New(), aws.NewConfig().WithRegion(os.Getenv("REGIO
 
 // SaveVerifiedWsUser add a user and session id combination
 func SaveVerifiedWsUser(wsID string, userID string) error {
-	fmt.Printf("Saving websocket id %v and userId %v in region %v", wsID, userID, os.Getenv("REGION"))
+	fmt.Printf("Saving websocket id %v and userId %v", wsID, userID)
 	input := &dynamodb.PutItemInput{
 		TableName: aws.String("WsUserTable"),
 		Item: map[string]*dynamodb.AttributeValue{
-			"connectionId": {
+			"ConnectionId": {
 				S: aws.String(wsID),
 			},
-			"userId": {
+			"UserId": {
 				S: aws.String(userID),
 			},
 		},
 	}
 	_, err := db.PutItem(input)
+	return err
+}
+
+// DeleteWsUser delete a websocket connection id
+func DeleteWsUser(wsID string) error {
+	fmt.Printf("Deleting user %v", wsID)
+	input := &dynamodb.DeleteItemInput{
+		TableName: aws.String("WsUserTable"),
+		Key: map[string]*dynamodb.AttributeValue{
+			"ConnectionId": {
+				S: aws.String(wsID),
+			},
+		},
+	}
+	_, err := db.DeleteItem(input)
+	return err
+}
+
+// WatchGame add watched game attribute to websocket table
+func WatchGame(wsID string, gameID string) error {
+	fmt.Printf("Deleting user %v", wsID)
+	input := &dynamodb.UpdateItemInput{
+		TableName: aws.String("WsUserTable"),
+		Key: map[string]*dynamodb.AttributeValue{
+			"ConnectionId": {
+				S: aws.String(wsID),
+			},
+		},
+		ExpressionAttributeNames: map[string]*string{
+			"#AT": aws.String("WatchedGame"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":t": {
+				S: aws.String(gameID),
+			},
+		},
+	}
+	_, err := db.UpdateItem(input)
 	return err
 }
 
