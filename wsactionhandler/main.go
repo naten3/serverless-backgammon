@@ -41,7 +41,7 @@ func Handler(context context.Context, request events.APIGatewayWebsocketProxyReq
 
 		var err error
 		if payload.Action == "watchGame" {
-			err = dbclient.WatchGame(connectionID, payload.Data)
+			err = watchGame(connectionID, payload.Data)
 		}
 		if payload.Action == "joinGame" {
 			err = joinGame(payload.Data, userID)
@@ -66,13 +66,16 @@ func Handler(context context.Context, request events.APIGatewayWebsocketProxyReq
 	}, nil
 }
 
+// watch the game, post to websockets if
 func watchGame(connectionID string, gameID string) error {
 	dbclient.WatchGame(connectionID, gameID)
 	fetchedGame, err := dbclient.GetGame(gameID)
 	if err != nil {
+		fmt.Println("error fetching game with id " + gameID + " " + err.Error())
 		return err
 	}
 
+	fmt.Println("Posting game status to" + connectionID)
 	err = wsclient.Post(connectionID, "watchedGame", fetchedGame)
 	return err
 }
@@ -114,7 +117,29 @@ func joinGame(gameID string, userID string) error {
 	}
 
 	saveErr := dbclient.SaveGame(*fetchedGame)
-	return saveErr
+	if saveErr != nil {
+		fmt.Println("save error " + saveErr.Error())
+		return saveErr
+	}
+
+	//notify watchers that a user joined
+	fmt.Println("getting game watchers")
+	watchers, err := dbclient.GetGameWatchers(gameID)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("notifying game watchers")
+	name, err := dbclient.GetUserName(userID)
+	if err != nil {
+		return err
+	}
+	err = wsclient.PostToMultiple(watchers, "userJoined", map[string]interface{}{
+		"userId": userID,
+		"color":  color,
+		"name":   name,
+	})
+	return err
 }
 
 func main() {

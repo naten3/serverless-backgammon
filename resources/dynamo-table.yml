@@ -6,9 +6,18 @@ Resources:
       AttributeDefinitions:
         - AttributeName: connectionId
           AttributeType: S
+        - AttributeName: watchedGame
+          AttributeType: S
       KeySchema:
         - AttributeName: connectionId
           KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: watchedGame-index
+          KeySchema:
+          - AttributeName: watchedGame
+            KeyType: HASH
+          Projection: 
+            ProjectionType: "ALL"
       # Set the capacity to auto-scale
       BillingMode: PAY_PER_REQUEST
   UserInfoTable:

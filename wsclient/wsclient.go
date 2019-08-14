@@ -42,3 +42,11 @@ func Post(connectionID string, action string, object interface{}) error {
 	}
 	return err
 }
+
+//PostToMultiple post to multiple websockets
+func PostToMultiple(connectionIDs []string, action string, object interface{}) error {
+	for i := range connectionIDs {
+		Post(connectionIDs[i], action, object)
+	}
+	return nil //TODO
+}

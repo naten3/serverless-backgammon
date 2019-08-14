@@ -5,6 +5,7 @@ build:
 
 	env GOOS=linux go build -ldflags="-s -w" -o bin/game game/game.model.go
 	env GOOS=linux go build -ldflags="-s -w" -o bin/wsclient wsclient/wsclient.go
+	env GOOS=linux go build -ldflags="-s -w" -o bin/dbclient dbclient/dbclient.go
 
 	env GOOS=linux go build -ldflags="-s -w" -o bin/hello hello/main.go
 	env GOOS=linux go build -ldflags="-s -w" -o bin/world world/main.go
