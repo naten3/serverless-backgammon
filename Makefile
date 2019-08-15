@@ -14,6 +14,7 @@ build:
 	env GOOS=linux go build -ldflags="-s -w" -o bin/ws ws/main.go
 	env GOOS=linux go build -ldflags="-s -w" -o bin/wsconnect wsconnect/main.go
 	env GOOS=linux go build -ldflags="-s -w" -o bin/wsauthenticate wsauthenticate/main.go
+	env GOOS=linux go build -ldflags="-s -w" -o bin/wsdisconnect wsdisconnect/main.go
 	env GOOS=linux go build -ldflags="-s -w" -o bin/wsactionhandler wsactionhandler/main.go
 
 

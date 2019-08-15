@@ -154,6 +154,22 @@ func WatchGame(wsID string, gameID string) error {
 	return err
 }
 
+// DeleteWsConnection remove a websocket connection
+func DeleteWsConnection(wsID string) error {
+	fmt.Printf("Deleting item for websocket id %v\n", wsID)
+	input := &dynamodb.DeleteItemInput{
+		Key: map[string]*dynamodb.AttributeValue{
+			"connectionId": {
+				S: aws.String(wsID),
+			},
+		},
+		TableName: aws.String("WsUserTable"),
+	}
+
+	_, err := db.DeleteItem(input)
+	return err
+}
+
 // GetGameWatchers get a list of ws connection ids watching this game
 func GetGameWatchers(gameID string) ([]string, error) {
 	fmt.Printf("getting watchers for  %v\n", gameID)

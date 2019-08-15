@@ -89,6 +89,11 @@ functions:
     events:
       - websocket:
           route: $default
+  websocket-disconnect:
+    handler: bin/wsdisconnect
+    events:
+      - websocket:
+          route: $disconnect
   websocket-authenticate:
     handler: bin/wsauthenticate
     events:
