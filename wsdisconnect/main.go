@@ -11,11 +11,6 @@ import (
 
 type Response events.APIGatewayProxyResponse
 
-type wsPayload struct {
-	Action string `json:"action"`
-	Data   string `json:"data"`
-}
-
 func Handler(context context.Context, request events.APIGatewayWebsocketProxyRequest) (Response, error) {
 	connectionID := request.RequestContext.ConnectionID
 	dbclient.DeleteWsUser(connectionID)

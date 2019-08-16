@@ -18,8 +18,8 @@ import (
 type Response events.APIGatewayProxyResponse
 
 type wsPayload struct {
-	Action string `json:"action"`
-	Data   string `json:"data"`
+	Type string `json:"type"`
+	Data string `json:"data"`
 }
 
 func Handler(context context.Context, request events.APIGatewayWebsocketProxyRequest) (Response, error) {
@@ -40,10 +40,10 @@ func Handler(context context.Context, request events.APIGatewayWebsocketProxyReq
 		println("user id is " + userID)
 
 		var err error
-		if payload.Action == "watchGame" {
+		if payload.Type == "watchGame" {
 			err = watchGame(connectionID, payload.Data)
 		}
-		if payload.Action == "joinGame" {
+		if payload.Type == "joinGame" {
 			err = joinGame(payload.Data, userID)
 		}
 
