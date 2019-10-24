@@ -6,7 +6,6 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	// todo better way to import this
 )
 
 type Response events.APIGatewayProxyResponse

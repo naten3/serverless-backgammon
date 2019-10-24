@@ -53,7 +53,7 @@ func Handler(context context.Context, request events.APIGatewayWebsocketProxyReq
 			}, nil
 		}
 
-		wsclient.Post(connectionID, "authenticated", nil)
+		wsclient.Post(connectionID, "wsAuthenticated", nil)
 		return Response{
 			StatusCode: 200,
 			Body:       "success",
