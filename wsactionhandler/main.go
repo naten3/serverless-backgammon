@@ -72,8 +72,7 @@ func Handler(context context.Context, request events.APIGatewayWebsocketProxyReq
 func watchGame(connectionID string, gameID string) error {
 	dbclient.WatchGame(connectionID, gameID)
 	fetchedGame, err := dbclient.GetGame(gameID)
-	if err == nil {
-		fmt.Println("Posting game status to" + connectionID)
+	if err == nil && fetchedGame != nil {
 		err = wsclient.Post(connectionID, "wsWatchedGame", fetchedGame)
 		return err
 	}
@@ -87,13 +86,14 @@ func joinGame(gameID string, userID string) error {
 		return err
 	}
 	if fetchedGame == nil {
+		// TODO if two players join at once there's maybe a race condition
 		newGame := game.NewGame(gameID)
 		fetchedGame = &newGame
 	}
 	if fetchedGame.White != nil && fetchedGame.Black != nil {
 		return errors.New("Game is full")
 	}
-	if (*fetchedGame.White == userID) || (*fetchedGame.Black == userID) {
+	if fetchedGame.White != nil && (*fetchedGame.White == userID) || fetchedGame.Black != nil && (*fetchedGame.Black == userID) {
 		fmt.Println(userID + " attempted to join game again")
 		return nil
 	}
@@ -111,10 +111,17 @@ func joinGame(gameID string, userID string) error {
 		color = game.Black
 	}
 
+	name, err := dbclient.GetUserName(userID)
+	if err != nil {
+		return err
+	}
+
 	if color == game.White {
 		fetchedGame.White = &userID
+		fetchedGame.WhiteName = &name
 	} else {
 		fetchedGame.Black = &userID
+		fetchedGame.BlackName = &name
 	}
 
 	saveErr := dbclient.SaveGame(*fetchedGame)
@@ -131,15 +138,7 @@ func joinGame(gameID string, userID string) error {
 	}
 
 	fmt.Println("notifying game watchers")
-	name, err := dbclient.GetUserName(userID)
-	if err != nil {
-		return err
-	}
-	err = wsclient.PostToMultiple(watchers, "wsUserJoined", map[string]interface{}{
-		"userId": userID,
-		"color":  color,
-		"name":   name,
-	})
+	err = wsclient.PostToMultiple(watchers, "wsUserJoined", fetchedGame)
 	return err
 }
 

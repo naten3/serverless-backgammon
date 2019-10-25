@@ -3,7 +3,9 @@ package game
 type Game struct {
 	Id               *string `json:"id"`
 	Black            *string `json:"black"`
+	BlackName        *string `json:"blackName"`
 	White            *string `json:"white"`
+	WhiteName        *string `json:"whiteName"`
 	Board            Board   `json:"board"`
 	InitialRoll      bool    `json:"initialRoll"`
 	BlackInitialRoll *int8   `json:"blackInitialRoll"`
@@ -40,7 +42,9 @@ func NewGame(gameID string) Game {
 	return Game{
 		Id:               &gameID,
 		Black:            nil,
+		BlackName:        nil,
 		White:            nil,
+		WhiteName:        nil,
 		Board:            newBoard(),
 		InitialRoll:      true,
 		BlackInitialRoll: nil,
