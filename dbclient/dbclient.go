@@ -57,7 +57,7 @@ type wsUser struct {
 // GetAuthenticatedUserID get an authenticated user id associated with a websocket
 func GetAuthenticatedUserID(wsID string) (string, error) {
 
-	fmt.Printf("getting user for wsID %v", wsID)
+	fmt.Println("getting user for wsID " + wsID)
 	result, err := db.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String("WsUserTable"),
 		Key: map[string]*dynamodb.AttributeValue{

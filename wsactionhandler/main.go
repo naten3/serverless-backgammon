@@ -18,8 +18,8 @@ import (
 type Response events.APIGatewayProxyResponse
 
 type wsPayload struct {
-	Type string `json:"type"`
-	Data string `json:"data"`
+	Type    string `json:"type"`
+	Payload string `json:"payload"`
 }
 
 func Handler(context context.Context, request events.APIGatewayWebsocketProxyRequest) (Response, error) {
@@ -38,13 +38,15 @@ func Handler(context context.Context, request events.APIGatewayWebsocketProxyReq
 			}, userFetchError
 		}
 		println("user id is " + userID)
+		println("payload type " + payload.Type)
 
 		var err error
-		if payload.Type == "watchGame" {
-			err = watchGame(connectionID, payload.Data)
-		}
-		if payload.Type == "joinGame" {
-			err = joinGame(payload.Data, userID)
+		if payload.Type == "wsWatchGame" {
+			err = watchGame(connectionID, payload.Payload)
+		} else if payload.Type == "wsJoinGame" {
+			err = joinGame(payload.Payload, userID)
+		} else {
+			err = errors.New("unrecognized action")
 		}
 
 		if err == nil {
@@ -66,18 +68,16 @@ func Handler(context context.Context, request events.APIGatewayWebsocketProxyReq
 	}, nil
 }
 
-// watch the game, post to websockets if
+// watch the game, post to websockets if in progress
 func watchGame(connectionID string, gameID string) error {
 	dbclient.WatchGame(connectionID, gameID)
 	fetchedGame, err := dbclient.GetGame(gameID)
-	if err != nil {
-		fmt.Println("error fetching game with id " + gameID + " " + err.Error())
+	if err == nil {
+		fmt.Println("Posting game status to" + connectionID)
+		err = wsclient.Post(connectionID, "wsWatchedGame", fetchedGame)
 		return err
 	}
-
-	fmt.Println("Posting game status to" + connectionID)
-	err = wsclient.Post(connectionID, "watchedGame", fetchedGame)
-	return err
+	return nil
 }
 
 // create game if not present, add player, notify all watchers of game
@@ -93,8 +93,9 @@ func joinGame(gameID string, userID string) error {
 	if fetchedGame.White != nil && fetchedGame.Black != nil {
 		return errors.New("Game is full")
 	}
-	if fetchedGame.White != nil && (*fetchedGame.White == userID) || fetchedGame.Black != nil && (*fetchedGame.Black == userID) {
-		return errors.New(userID + " attempted to join game again")
+	if (*fetchedGame.White == userID) || (*fetchedGame.Black == userID) {
+		fmt.Println(userID + " attempted to join game again")
+		return nil
 	}
 	var color game.Color
 	if fetchedGame.White == nil && fetchedGame.Black == nil {
@@ -134,7 +135,7 @@ func joinGame(gameID string, userID string) error {
 	if err != nil {
 		return err
 	}
-	err = wsclient.PostToMultiple(watchers, "userJoined", map[string]interface{}{
+	err = wsclient.PostToMultiple(watchers, "wsUserJoined", map[string]interface{}{
 		"userId": userID,
 		"color":  color,
 		"name":   name,

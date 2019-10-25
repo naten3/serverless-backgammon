@@ -16,8 +16,8 @@ import (
 type Response events.APIGatewayProxyResponse
 
 type wsPayload struct {
-	Type string `json:"type"`
-	Data string `json:"data"`
+	Type    string `json:"type"`
+	Payload string `json:"payload"`
 }
 
 func Handler(context context.Context, request events.APIGatewayWebsocketProxyRequest) (Response, error) {
@@ -28,7 +28,7 @@ func Handler(context context.Context, request events.APIGatewayWebsocketProxyReq
 	if unmarshalErr != nil {
 		fmt.Println(unmarshalErr.Error())
 	}
-	token := payload.Data
+	token := payload.Payload
 	fmt.Println("token is " + token)
 
 	// TODO put in env variable

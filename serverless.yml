@@ -104,6 +104,7 @@ functions:
           route: wsAuthenticate
   websocket-handle-action:
     handler: "bin/wsactionhandler"
+    role: DefaultRole
     events:
       - websocket:
           route: wsWatchGame

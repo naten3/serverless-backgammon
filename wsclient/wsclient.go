@@ -17,8 +17,8 @@ var client = apigatewaymanagementapi.New(sess, aws.NewConfig().WithEndpoint(endp
 // Post post a payload to a specific connection id
 func Post(connectionID string, t string, object interface{}) error {
 	body := map[string]interface{}{
-		"type": t,
-		"data": object,
+		"type":    t,
+		"payload": object,
 	}
 
 	json, err := json.Marshal(body)
