@@ -45,6 +45,8 @@ func Handler(context context.Context, request events.APIGatewayWebsocketProxyReq
 			err = watchGame(connectionID, payload.Payload)
 		} else if payload.Type == "wsJoinGame" {
 			err = joinGame(payload.Payload, userID)
+		} else if payload.Type == "wsChangeName" {
+			err = changeName(payload.Payload, userID)
 		} else {
 			err = errors.New("unrecognized action")
 		}
@@ -72,8 +74,11 @@ func Handler(context context.Context, request events.APIGatewayWebsocketProxyReq
 func watchGame(connectionID string, gameID string) error {
 	dbclient.WatchGame(connectionID, gameID)
 	fetchedGame, err := dbclient.GetGame(gameID)
+	if err != nil {
+		return err
+	}
 	if err == nil && fetchedGame != nil {
-		err = wsclient.Post(connectionID, "wsWatchedGame", fetchedGame)
+		err = wsclient.Post(connectionID, "wsWatchedGame", addDisplayNames(fetchedGame))
 		return err
 	}
 	return nil
@@ -90,38 +95,31 @@ func joinGame(gameID string, userID string) error {
 		newGame := game.NewGame(gameID)
 		fetchedGame = &newGame
 	}
-	if fetchedGame.White != nil && fetchedGame.Black != nil {
+	if len(fetchedGame.White) > 0 && len(fetchedGame.Black) > 0 {
 		return errors.New("Game is full")
 	}
-	if fetchedGame.White != nil && (*fetchedGame.White == userID) || fetchedGame.Black != nil && (*fetchedGame.Black == userID) {
+	if fetchedGame.White == userID || fetchedGame.Black == userID {
 		fmt.Println(userID + " attempted to join game again")
 		return nil
 	}
 	var color game.Color
-	if fetchedGame.White == nil && fetchedGame.Black == nil {
+	if len(fetchedGame.White) == 0 && len(fetchedGame.Black) == 0 {
 		if rand.Intn(2)%2 == 0 {
 			color = game.Black
 		} else {
 			color = game.White
 		}
 	}
-	if fetchedGame.White == nil {
+	if len(fetchedGame.White) == 0 {
 		color = game.White
 	} else {
 		color = game.Black
 	}
 
-	name, err := dbclient.GetUserName(userID)
-	if err != nil {
-		return err
-	}
-
 	if color == game.White {
-		fetchedGame.White = &userID
-		fetchedGame.WhiteName = &name
+		fetchedGame.White = userID
 	} else {
-		fetchedGame.Black = &userID
-		fetchedGame.BlackName = &name
+		fetchedGame.Black = userID
 	}
 
 	saveErr := dbclient.SaveGame(*fetchedGame)
@@ -138,8 +136,55 @@ func joinGame(gameID string, userID string) error {
 	}
 
 	fmt.Println("notifying game watchers")
-	err = wsclient.PostToMultiple(watchers, "wsUserJoined", fetchedGame)
+	err = wsclient.PostToMultiple(watchers, "wsUserJoined", addDisplayNames(fetchedGame))
 	return err
+}
+
+func changeName(name string, userID string) error {
+	err := dbclient.SetName(userID, name)
+	if err != nil {
+		return err
+	}
+	watchers, err2 := getUserGameWatchers(userID)
+	if err2 != nil {
+		return err2
+	}
+	err = wsclient.PostToMultiple(watchers, "wsUserNameChanged", map[string]interface{}{
+		"userId":      userID,
+		"displayName": name,
+	})
+	return err
+}
+
+// get all watchers for all games this user is a player in
+func getUserGameWatchers(userID string) ([]string, error) {
+	userGames, err := dbclient.GetAllUserGames(userID)
+	if err != nil {
+		return nil, err
+	}
+	allWatchers := make([]string, 0)
+	// Loop through the games this user is a player in and get all watchers for each game
+	// This is gross but I don't see a better way
+	for _, game := range userGames {
+		watchers, err2 := dbclient.GetGameWatchers(game.Id)
+		if err2 != nil {
+			return nil, err2
+		}
+		allWatchers = append(allWatchers, watchers...)
+	}
+	return allWatchers, nil
+}
+
+func addDisplayNames(game *game.Game) interface{} {
+	whiteName := ""
+	blackName := ""
+	whiteName, _ = dbclient.GetUserName(game.White)
+	blackName, _ = dbclient.GetUserName(game.Black)
+	return map[string]interface{}{
+		"game":      game,
+		"whiteName": whiteName,
+		"blackName": blackName,
+	}
 }
 
 func main() {

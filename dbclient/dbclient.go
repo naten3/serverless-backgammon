@@ -1,6 +1,7 @@
 package dbclient
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -92,7 +93,7 @@ type userInfo struct {
 
 // SetName set user's name
 func SetName(userID string, name string) error {
-	fmt.Printf("Saving user info for user id %v", userID)
+	fmt.Printf("Saving user info for user id %v\n", userID)
 	input := &dynamodb.PutItemInput{
 		TableName: aws.String("UserInfo"),
 		Item: map[string]*dynamodb.AttributeValue{
@@ -105,11 +106,15 @@ func SetName(userID string, name string) error {
 		},
 	}
 	_, err := db.PutItem(input)
+
 	return err
 }
 
 // GetUserName get user's name
 func GetUserName(userID string) (string, error) {
+	if userID == "" {
+		return "", nil
+	}
 	fmt.Printf("getting name for userId %v\n", userID)
 	result, err := db.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String("UserInfo"),
@@ -208,12 +213,16 @@ func GetGameWatchers(gameID string) ([]string, error) {
 
 // SaveGame save a game state
 func SaveGame(game game.Game) error {
-	fmt.Printf("Saving game %v\n", game.Id)
+	bytes, err := json.Marshal(game)
+	fmt.Println("Saving game " + string(bytes))
 	item, err := dynamodbattribute.MarshalMap(game)
 	if err != nil {
 		fmt.Println("Error marshalling game " + err.Error())
 		return err
 	}
+
+	bytes, err = json.Marshal(item)
+	fmt.Println("Saving game marshal map " + string(bytes))
 
 	input := &dynamodb.PutItemInput{
 		TableName: aws.String("Game"),
@@ -222,7 +231,6 @@ func SaveGame(game game.Game) error {
 	_, saveError := db.PutItem(input)
 	if saveError != nil {
 		fmt.Println("error saveing game " + saveError.Error())
-		return err
 	}
 	return saveError
 }
@@ -250,4 +258,61 @@ func GetGame(gameID string) (*game.Game, error) {
 		return &g, err
 	}
 	return nil, nil
+}
+
+func GetAllUserGames(userID string) ([]game.Game, error) {
+	blackGames, _ := GetUserGames(userID, game.Black)
+	whiteGames, _ := GetUserGames(userID, game.White)
+	return append(blackGames, whiteGames...), nil
+}
+
+// GetUserGames get all games in which this user is a player
+func GetUserGames(userID string, color game.Color) ([]game.Game, error) {
+	var index string
+	var keyConditions map[string]*dynamodb.Condition
+	if color == game.White {
+		index = "white-index"
+		keyConditions = map[string]*dynamodb.Condition{
+			"white": {
+				ComparisonOperator: aws.String("EQ"),
+				AttributeValueList: []*dynamodb.AttributeValue{
+					{
+						S: aws.String(userID),
+					},
+				},
+			},
+		}
+	} else {
+		index = "black-index"
+		keyConditions = map[string]*dynamodb.Condition{
+			"black": {
+				ComparisonOperator: aws.String("EQ"),
+				AttributeValueList: []*dynamodb.AttributeValue{
+					{
+						S: aws.String(userID),
+					},
+				},
+			},
+		}
+	}
+
+	fmt.Printf("getting games for user for  %v\n", userID)
+	var queryInput = &dynamodb.QueryInput{
+		TableName:     aws.String("Game"),
+		IndexName:     aws.String(index),
+		KeyConditions: keyConditions,
+	}
+	resp1, err1 := db.Query(queryInput)
+	if err1 != nil {
+		fmt.Println("Error fetching watched games " + err1.Error())
+		return nil, err1
+	}
+	games := []game.Game{}
+	err := dynamodbattribute.UnmarshalListOfMaps(resp1.Items, &games)
+	if err != nil {
+		fmt.Println("Error unmarshalling watched games " + err1.Error())
+		return nil, err1
+	}
+
+	return games, nil
 }

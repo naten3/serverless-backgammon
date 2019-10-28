@@ -39,8 +39,25 @@ Resources:
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
+        - AttributeName: black
+          AttributeType: S
+        - AttributeName: white
+          AttributeType: S
       KeySchema:
         - AttributeName: id
           KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: white-index
+          KeySchema:
+          - AttributeName: white
+            KeyType: HASH
+          Projection: 
+            ProjectionType: "ALL"
+        - IndexName: black-index
+          KeySchema:
+          - AttributeName: black
+            KeyType: HASH
+          Projection: 
+            ProjectionType: "ALL"
       # Set the capacity to auto-scale
       BillingMode: PAY_PER_REQUEST

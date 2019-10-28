@@ -110,6 +110,8 @@ functions:
           route: wsWatchGame
       - websocket:
           route: wsJoinGame
+      - websocket:
+          route: wsChangeName
 resources:
   - ${file(resources/dynamo-table.yml)}
   - ${file(resources/roles.yml)}

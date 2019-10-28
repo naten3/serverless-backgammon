@@ -53,7 +53,10 @@ func Handler(context context.Context, request events.APIGatewayWebsocketProxyReq
 			}, nil
 		}
 
-		wsclient.Post(connectionID, "wsAuthenticated", nil)
+		displayName, _ := dbclient.GetUserName(id)
+		wsclient.Post(connectionID, "wsAuthenticated", map[string]interface{}{
+			"displayName": displayName,
+		})
 		return Response{
 			StatusCode: 200,
 			Body:       "success",

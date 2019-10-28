@@ -1,17 +1,15 @@
 package game
 
 type Game struct {
-	Id               *string `json:"id"`
-	Black            *string `json:"black"`
-	BlackName        *string `json:"blackName"`
-	White            *string `json:"white"`
-	WhiteName        *string `json:"whiteName"`
-	Board            Board   `json:"board"`
-	InitialRoll      bool    `json:"initialRoll"`
-	BlackInitialRoll *int8   `json:"blackInitialRoll"`
-	WhiteInitialRoll *int8   `json:"whiteInitialRoll"`
-	CurrentRoll      *Roll   `json:"currentRoll"`
-	CurrentTurn      *Color  `json:"currentTurn"`
+	Id               string `json:"id"`
+	Black            string `json:"black,omitempty"`
+	White            string `json:"white,omitempty"`
+	Board            Board  `json:"board"`
+	InitialRoll      bool   `json:"initialRoll"`
+	BlackInitialRoll *int8  `json:"blackInitialRoll"`
+	WhiteInitialRoll *int8  `json:"whiteInitialRoll"`
+	CurrentRoll      *Roll  `json:"currentRoll"`
+	CurrentTurn      *Color `json:"currentTurn"`
 }
 
 type Player struct {
@@ -40,11 +38,9 @@ const (
 
 func NewGame(gameID string) Game {
 	return Game{
-		Id:               &gameID,
-		Black:            nil,
-		BlackName:        nil,
-		White:            nil,
-		WhiteName:        nil,
+		Id:               gameID,
+		Black:            "",
+		White:            "",
 		Board:            newBoard(),
 		InitialRoll:      true,
 		BlackInitialRoll: nil,
