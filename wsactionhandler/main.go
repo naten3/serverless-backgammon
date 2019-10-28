@@ -122,6 +122,10 @@ func joinGame(gameID string, userID string) error {
 		fetchedGame.Black = userID
 	}
 
+	if len(fetchedGame.Black) > 0 && len(fetchedGame.White) > 0 {
+		fetchedGame = StartGame(fetchedGame)
+	}
+
 	saveErr := dbclient.SaveGame(*fetchedGame)
 	if saveErr != nil {
 		fmt.Println("save error " + saveErr.Error())
@@ -138,6 +142,10 @@ func joinGame(gameID string, userID string) error {
 	fmt.Println("notifying game watchers")
 	err = wsclient.PostToMultiple(watchers, "wsUserJoined", addDisplayNames(fetchedGame))
 	return err
+}
+
+func initialRoll(userID string) error {
+
 }
 
 func changeName(name string, userID string) error {

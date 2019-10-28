@@ -112,6 +112,8 @@ functions:
           route: wsJoinGame
       - websocket:
           route: wsChangeName
+      - websocket:
+          route: wsInitialRoll
 resources:
   - ${file(resources/dynamo-table.yml)}
   - ${file(resources/roles.yml)}
